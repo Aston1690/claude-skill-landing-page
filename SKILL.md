@@ -9,9 +9,43 @@ Build high-quality, deployment-ready landing pages by extracting branding and co
 
 This skill exists because landing pages require careful coordination of branding, content, images, and responsive design — and the most common failure mode is treating source documents as text-only, missing the images that carry half the marketing message.
 
-## The Golden Rule
+## The Golden Rules
 
-**Images are content, not decoration.** When a marketing PDF shows a classroom photo next to a paragraph about student wellbeing, that photo IS the message. A landing page without those images is incomplete regardless of how good the copy is. Extract and integrate images in the first pass, every time.
+**1. Images are content, not decoration.** When a marketing PDF shows a classroom photo next to a paragraph about student wellbeing, that photo IS the message. A landing page without those images is incomplete regardless of how good the copy is. Extract and integrate images in the first pass, every time.
+
+**2. CSS goes in styles.css, not in the HTML.** Always use a separate stylesheet. Inline styles in HTML are unacceptable — they break maintainability, can't use media queries, and make the code unmaintainable. The ONLY exception is the `<style>` tag in the `<head>` for critical above-the-fold CSS if specifically requested.
+
+**3. Never invent content.** Use only what the source document provides. Do not make up image captions, visual directions, testimonial quotes, statistics, or client names. If content is missing, flag it and ask — do not fill gaps with AI-generated placeholder copy.
+
+---
+
+## Anti-Slop Rules (MANDATORY)
+
+These patterns make AI-generated pages look cheap and generic. NEVER use them:
+
+### Banned Copy Patterns
+- "Revolutionize", "Transform your", "Unleash the power of", "Leverage", "Empower"
+- "Cutting-edge", "Next-generation", "State-of-the-art", "Best-in-class"
+- "Seamlessly", "Effortlessly", "Supercharge"
+- "In today's fast-paced world", "In an era of"
+- Starting paragraphs with "Imagine..." or "Picture this..."
+- Generic CTAs like "Learn More" or "Get Started" without context — use specific CTAs: "Get Instant Quote", "Book a Demo", "See Pricing"
+
+### Banned Visual Patterns
+- Gradient mesh blobs or aurora backgrounds (the #1 tell of AI-generated pages)
+- Purple-to-blue gradients as primary design language
+- Floating 3D objects with no connection to the product
+- Generic abstract geometric patterns as hero backgrounds
+- Overly rounded cards (border-radius > 1.5rem) with heavy drop shadows
+- Identical card layouts repeated 3+ times with only icon changes
+- Stock photo hero images that don't match the business (e.g., generic handshake photos)
+
+### Banned Code Patterns
+- Inline styles in HTML elements
+- Using `!important` in CSS (except for utility overrides)
+- Hardcoded pixel values for font sizes — use `clamp()` or rem
+- Missing `alt` attributes on images
+- Using `<div>` when semantic elements exist (`<section>`, `<article>`, `<nav>`, `<header>`, `<footer>`)
 
 ---
 
@@ -140,25 +174,114 @@ Start the stylesheet with the extracted brand system:
 :root {
   /* Brand colors — extracted from client site */
   --primary: #0f4661;
+  --primary-dark: #0a3347;
   --accent: #f37b78;
+  --accent-hover: #e06560;
   /* ... all brand colors as custom properties */
 
+  /* Neutral scale — always define these */
+  --gray-50: #f8f9fa;
+  --gray-100: #f0f2f5;
+  --gray-200: #e2e5ea;
+  --gray-300: #c8cdd5;
+  --gray-400: #9ca3b0;
+  --gray-500: #6b7280;
+  --gray-600: #4b5563;
+  --gray-700: #374151;
+  --gray-800: #1f2937;
+  --gray-900: #111827;
+
   /* Utility tokens */
-  --shadow-sm: 0 1px 3px rgba(0,0,0,0.08);
-  --shadow-md: 0 4px 16px rgba(0,0,0,0.10);
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.06);
+  --shadow-md: 0 4px 20px rgba(0,0,0,0.08);
+  --shadow-lg: 0 8px 40px rgba(0,0,0,0.12);
+  --shadow-xl: 0 20px 60px rgba(0,0,0,0.16);
   --radius-sm: 0.375rem;
   --radius-md: 0.75rem;
-  --radius-lg: 1.25rem;
+  --radius-lg: 1rem;
+  --radius-xl: 1.5rem;
+
+  /* Transitions */
+  --transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-bounce: 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 body {
   font-family: 'ExtractedFont', -apple-system, BlinkMacSystemFont, sans-serif;
-  color: var(--primary);
-  background: var(--background);
+  color: var(--gray-700);
+  background: var(--white, #ffffff);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
 }
 ```
 
+### Typography Rules (CRITICAL)
+
+Bad typography is the #1 reason AI pages look amateur. Follow these strictly:
+
+```css
+/* Minimum sizes — NEVER go below these */
+body { font-size: clamp(1rem, 0.95rem + 0.25vw, 1.125rem); } /* 16-18px */
+h1 { font-size: clamp(2.25rem, 1.5rem + 3vw, 4rem); }       /* 36-64px */
+h2 { font-size: clamp(1.75rem, 1.25rem + 2vw, 3rem); }       /* 28-48px */
+h3 { font-size: clamp(1.25rem, 1rem + 1vw, 1.75rem); }       /* 20-28px */
+
+/* Line heights */
+h1, h2 { line-height: 1.15; letter-spacing: -0.02em; }
+h3 { line-height: 1.3; }
+p { line-height: 1.7; max-width: 65ch; } /* Readable line length */
+
+/* Font weights — use contrast */
+h1 { font-weight: 800; }  /* Extra bold for main headline */
+h2 { font-weight: 700; }  /* Bold for section titles */
+h3 { font-weight: 600; }  /* Semi-bold for card titles */
+body { font-weight: 400; } /* Regular for body */
+```
+
 Use BEM naming: `.section__element--modifier`. This keeps specificity flat and styles predictable.
+
+### Animation & Motion
+
+Add subtle scroll-reveal animations. These make pages feel polished without being distracting:
+
+```css
+/* Scroll reveal — add .reveal class to sections */
+.reveal {
+  opacity: 0;
+  transform: translateY(30px);
+  transition: opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1),
+              transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.reveal.revealed {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Stagger children with delay classes */
+.reveal--delay-1 { transition-delay: 0.1s; }
+.reveal--delay-2 { transition-delay: 0.2s; }
+.reveal--delay-3 { transition-delay: 0.3s; }
+
+/* Button hover — subtle lift */
+.btn { transition: transform var(--transition), box-shadow var(--transition); }
+.btn:hover { transform: translateY(-2px); box-shadow: var(--shadow-lg); }
+
+/* Image hover for galleries */
+.gallery__item img { transition: transform 0.5s ease; }
+.gallery__item:hover img { transform: scale(1.05); }
+```
+
+Add this JavaScript at the bottom for scroll reveals:
+```javascript
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      entry.target.classList.add('revealed');
+    }
+  });
+}, { threshold: 0.1 });
+document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+```
 
 ### Section Structure
 
@@ -331,6 +454,52 @@ For detailed section templates and CSS patterns, see:
 
 ---
 
+## SEO Essentials
+
+Every landing page MUST include these. Missing them means the page is invisible to search engines:
+
+```html
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>[Primary Keyword] — [Brand Name] | [Value Prop]</title>
+  <meta name="description" content="[150-160 char description with primary keyword naturally included]">
+  <link rel="canonical" href="https://[domain]/[page]">
+
+  <!-- Open Graph for social sharing -->
+  <meta property="og:title" content="[Title]">
+  <meta property="og:description" content="[Description]">
+  <meta property="og:image" content="[Hero image URL — 1200x630px ideal]">
+  <meta property="og:url" content="[Canonical URL]">
+  <meta property="og:type" content="website">
+
+  <!-- Favicon -->
+  <link rel="icon" href="[favicon URL]" type="image/png">
+</head>
+```
+
+Additional SEO rules:
+- Use ONE `<h1>` per page (the hero headline)
+- Use `<h2>` for section titles, `<h3>` for subsection titles — proper hierarchy
+- All images must have descriptive `alt` attributes (not "image1" or "photo")
+- Use semantic HTML: `<header>`, `<nav>`, `<main>`, `<section>`, `<footer>`
+- Add `loading="lazy"` to images below the fold
+- Add `loading="eager"` to the hero image
+
+---
+
+## Performance Rules
+
+These prevent the page from being slow:
+
+- **Images**: Use Unsplash/source images with `w=` parameter for proper sizing. Never load a 4000px image for a 600px container.
+- **Fonts**: Maximum 2 font families. Load only the weights you use (e.g., `wght@400;600;700` not `wght@100..900`).
+- **CSS**: Keep styles in one external file. No CSS frameworks (Bootstrap/Tailwind) for simple landing pages — they add bloat.
+- **JavaScript**: Minimal JS only — hamburger menu, scroll reveal, smooth scroll. No jQuery, no React, no framework for a static landing page.
+- **Above the fold**: The hero section must render without waiting for external resources. Use `font-display: swap` and preconnect to Google Fonts.
+
+---
+
 ## Quick Start Checklist
 
 When you receive a landing page request, run through this mentally:
@@ -342,4 +511,9 @@ When you receive a landing page request, run through this mentally:
 - [ ] Have I mapped every image to its content section?
 - [ ] Have I tested all three breakpoints?
 - [ ] Have I verified every image loads?
+- [ ] Is all CSS in styles.css (nothing inline)?
+- [ ] Do I have proper meta tags (title, description, OG)?
+- [ ] Are font sizes readable (16px+ body, proper heading scale)?
+- [ ] Did I avoid all Anti-Slop patterns?
+- [ ] Do animations work (scroll reveal, hover states)?
 - [ ] Does the user want deployment? Where?
