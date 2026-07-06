@@ -1,4 +1,4 @@
-# /landing-page — Claude Code Skill
+# landing-page — Hermes Skill
 
 Build complete, deployment-ready landing pages from client websites and content documents.
 
@@ -7,10 +7,17 @@ Build complete, deployment-ready landing pages from client websites and content 
 Paste this into your terminal:
 
 ```bash
-bash <(curl -sL https://raw.githubusercontent.com/Aston1690/claude-skill-landing-page/main/install.sh)
+bash <(curl -fsSL https://raw.githubusercontent.com/Aston1690/claude-skill-landing-page/main/install.sh)
 ```
 
-Then restart Claude Code. Type `/landing-page` to use it.
+Then in Hermes run:
+
+```text
+/reload-skills
+/skill landing-page
+```
+
+If it still does not show, restart Hermes and run `/skill landing-page` again.
 
 ## What It Does
 
@@ -26,7 +33,7 @@ Give it a business website URL + content document (PDF, Word doc, brand brief) a
 ## Usage
 
 ```
-/landing-page
+/skill landing-page
 ```
 
 Then provide:
@@ -36,6 +43,17 @@ Then provide:
 
 ## Requirements
 
-- [Claude Code](https://docs.anthropic.com/en/docs/claude-code) CLI
+- [Hermes Agent](https://hermes-agent.nousresearch.com/docs)
+- git
 - Node.js (for local preview server)
 - Vercel CLI (optional, for deployment)
+
+## Install Location
+
+The installer copies this repository to:
+
+```text
+${HERMES_HOME:-~/.hermes}/skills/landing-page
+```
+
+Hermes only rescans skills after `/reload-skills` or a restart, so installing alone is not enough for an already-running session.

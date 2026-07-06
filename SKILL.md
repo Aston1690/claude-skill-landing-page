@@ -1,6 +1,13 @@
 ---
 name: landing-page
 description: "Build complete, deployment-ready landing pages from client websites and content documents (PDFs, Word docs, brand discovery docs). Use this skill whenever the user wants to create a landing page, redesign an existing website, build a sales page, create a one-page marketing site, or convert content documents into a web page. Also trigger when the user provides a website URL and asks for a redesign, gives you a PDF/doc and wants it turned into a web page, mentions 'landing page', 'sales page', 'marketing page', 'one-pager website', 'web redesign', or asks to deploy a static site to Vercel or Netlify. This skill handles the full pipeline: research, brand extraction, content structuring, image verification, responsive HTML/CSS build, and deployment."
+version: 1.0.1
+author: Akhil Aston
+license: MIT
+metadata:
+  hermes:
+    tags: [landing-pages, web-design, static-sites, vercel, client-websites]
+    related_skills: [web-development, frontend-design]
 ---
 
 # Landing Page Builder
