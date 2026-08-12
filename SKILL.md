@@ -1,13 +1,12 @@
 ---
 name: landing-page
-description: "Build complete, deployment-ready landing pages from client websites and content documents (PDFs, Word docs, brand discovery docs). Use this skill whenever the user wants to create a landing page, redesign an existing website, build a sales page, create a one-page marketing site, or convert content documents into a web page. Also trigger when the user provides a website URL and asks for a redesign, gives you a PDF/doc and wants it turned into a web page, mentions 'landing page', 'sales page', 'marketing page', 'one-pager website', 'web redesign', or asks to deploy a static site to Vercel or Netlify. This skill handles the full pipeline: research, brand extraction, content structuring, image verification, responsive HTML/CSS build, and deployment."
-version: 1.0.1
-author: Akhil Aston
+description: "Build complete, deployment-ready landing pages with an explicit frontend skill stack: Frontend Design for art direction, Design Taste Frontend for anti-slop implementation, Imagegen Frontend Web for section-level visual references when useful, and this skill for research, conversion structure, build, browser QA, and deployment. Use whenever the user asks for a landing page, sales page, campaign page, one-page marketing site, website redesign, or wants a URL/PDF/doc/brief converted into a web page. Trigger even when the user only asks to improve a landing page's frontend, imagery, responsiveness, or deployment."
 license: MIT
 metadata:
+  version: 2.0.0
+  author: Akhil
   hermes:
-    tags: [landing-pages, web-design, static-sites, vercel, client-websites]
-    related_skills: [web-development, frontend-design]
+    tags: [landing-pages, frontend-design, responsive-web, browser-qa, vercel]
 ---
 
 # Landing Page Builder
@@ -20,9 +19,40 @@ This skill exists because landing pages require careful coordination of branding
 
 **1. Images are content, not decoration.** When a marketing PDF shows a classroom photo next to a paragraph about student wellbeing, that photo IS the message. A landing page without those images is incomplete regardless of how good the copy is. Extract and integrate images in the first pass, every time.
 
-**2. CSS goes in styles.css, not in the HTML.** Always use a separate stylesheet. Inline styles in HTML are unacceptable — they break maintainability, can't use media queries, and make the code unmaintainable. The ONLY exception is the `<style>` tag in the `<head>` for critical above-the-fold CSS if specifically requested.
+**2. Keep styling maintainable within the chosen stack.** For a static page, put CSS in `styles.css`, not inline in HTML. For an existing framework project, preserve its established CSS modules, component styles, utility classes, or token system. Do not migrate styling architecture without a reason.
 
 **3. Never invent content.** Use only what the source document provides. Do not make up image captions, visual directions, testimonial quotes, statistics, or client names. If content is missing, flag it and ask — do not fill gaps with AI-generated placeholder copy.
+
+**4. Use the frontend stack deliberately.** Before coding, load the available supporting skills named below. They are complementary roles, not duplicate instructions to paste together blindly. If a named skill is unavailable, continue with the available stack and record the gap; never pretend it ran.
+
+---
+
+## Frontend Skill Stack (Required Routing)
+
+The screenshot-provided frontend tools map to this landing-page workflow as follows. Read `references/frontend-skill-stack.md` for the complete routing and conflict rules.
+
+1. **`frontend-design`** — establish the subject-specific visual thesis, typography, palette, layout concept, signature element, and motion intent. Use for new builds and meaningful visual reshaping.
+2. **`design-taste-frontend`** — apply anti-slop implementation discipline, responsive layout mechanics, accessible interaction states, component choices, performance checks, and the final design pre-flight.
+3. **`imagegen-frontend-web`** — use when generated visual references would materially reduce ambiguity: unknown visual direction, image-led campaigns, custom illustration/art direction, or a user asking for mockups. It generates references; it does not replace real brand assets or implementation.
+4. **`design-taste-frontend-v1`** — legacy fallback only. Use it when an existing project explicitly depends on v1 behaviour; do not load v1 and current Design Taste together.
+5. **`imagegen-frontend-mobile`** — not part of a website landing-page build. Use only for a separate mobile-app screen deliverable, never as the page's responsive-web design step.
+6. **`Aidesigner Frontend`** — if this exact skill becomes installed and discoverable, use it as an optional second critique of the approved art direction. It is not currently assumed available and must never block the workflow.
+
+Do not run every tool for ceremony. The minimum new-landing-page stack is `frontend-design` + current `design-taste-frontend` + `landing-page`. Add `imagegen-frontend-web` when visual-reference generation is justified. Responsive mobile web remains part of the implementation and QA; it is not delegated to the mobile-app image skill.
+
+### Required pre-code design gate
+
+Before implementation, produce an internal build brief containing:
+- the page's audience, single conversion goal, and source-of-truth content;
+- one coherent visual thesis tied to the actual subject, not a generic SaaS aesthetic;
+- palette and typography roles with licensing/availability checked;
+- section order and the job of every section;
+- asset map: preserve, obtain, generate, or omit;
+- one signature visual idea and a restrained motion plan;
+- desktop, tablet, and mobile behaviour for the first fold and complex sections;
+- explicit avoid-list based on the brand and reference audit.
+
+If the user supplied a reference, extract principles without cloning its identity. If the source is an existing client site or approved template, preserve approved copy, brand assets, component grammar, and section order unless the user explicitly authorises a redesign.
 
 ---
 
@@ -58,20 +88,21 @@ These patterns make AI-generated pages look cheap and generic. NEVER use them:
 
 ## Workflow Overview
 
-The build follows six phases. Do not skip or reorder them — each phase depends on the previous one.
+The build follows seven phases. Resolve obvious facts from supplied sources instead of asking the user to repeat them. Ask only when a missing decision materially changes the result.
 
-1. **Research** — Scrape the client site for branding, assets, and design language
-2. **Content Extraction** — Pull ALL content (text AND images) from provided documents
-3. **Image Catalog** — Build a verified inventory of every usable image
-4. **Build** — Create the HTML/CSS with proper structure and image integration
-5. **Verify** — Test all images, responsiveness, and functionality
-6. **Deploy** — Ship to Vercel (or user's preferred host)
+1. **Context & Research** — Read project/client instructions, meeting decisions, brief, approval state, live brand, references, copy, and design grammar
+2. **Content Extraction** — Pull all approved text and images from supplied sources
+3. **Asset Verification** — Build a provenance-aware inventory of usable media
+4. **Frontend Direction & Blueprint** — Apply Frontend Design and Design Taste; lock conversion flow, tokens, responsive behaviour, assets, and acceptance checks; generate web references only when justified
+5. **Build** — Use the simplest stack that satisfies the brief and implement complete production code
+6. **Browser QA** — Build/test, inspect screenshots at desktop/tablet/mobile, fix defects, and repeat
+7. **Deploy & Live Verify** — Deploy only when requested, then inspect the real URL and report the verified alias
 
 ---
 
-## Phase 1: Research
+## Phase 1: Context & Research
 
-Before writing any HTML, understand the client's existing brand and collect every asset you'll need.
+Before writing code, read the nearest project/client instructions, approved brief, meeting decisions, and source links. Then understand the client's existing brand and collect every asset you'll need.
 
 ### Brand Extraction
 
@@ -159,9 +190,26 @@ Gallery: classroom.jpeg, confidence.png, founders.jpeg (all verified)
 
 ---
 
-## Phase 4: Build
+## Phase 4: Frontend Direction & Blueprint
 
-### File Structure
+Load the required frontend skill stack and complete the pre-code design gate from the top of this file. Decide whether generated web reference images are useful. Lock the conversion flow, section jobs, visual tokens, media plan, motion intent, responsive behaviour, and acceptance checks before implementation.
+
+Self-reject the direction if it could be reused unchanged for an unrelated client. One coherent art direction is better than averaging several skill aesthetics.
+
+## Phase 5: Build
+
+### Choose the implementation stack
+
+Do not force every landing page into one technology. Choose based on the actual project:
+
+- **Existing repository or template:** preserve its framework, runtime, components, routing, and asset pipeline unless migration is explicitly requested.
+- **Static campaign page:** semantic HTML, external CSS, and minimal JavaScript are preferred when no component architecture or app behaviour is needed.
+- **Component-led or interactive page:** React/Vite, Next.js, or the repository's existing stack is valid when reusable components, integrations, state, or complex motion justify it.
+- Verify dependencies before importing them. Prefer existing project libraries over adding fashionable packages.
+
+The old default below applies only to a genuinely new static page.
+
+### Static-page file structure
 
 Keep it simple — a single directory with two files:
 
@@ -171,7 +219,7 @@ project-name/
 └── styles.css
 ```
 
-No build tools, no frameworks, no JavaScript dependencies. This makes deployment trivial and the page fast.
+For a simple static page, avoid unnecessary build tools and framework dependencies. This is a default, not a prohibition against using the project's real stack.
 
 ### Design System Setup (styles.css)
 
@@ -239,9 +287,9 @@ h3 { line-height: 1.3; }
 p { line-height: 1.7; max-width: 65ch; } /* Readable line length */
 
 /* Font weights — use contrast */
-h1 { font-weight: 800; }  /* Extra bold for main headline */
-h2 { font-weight: 700; }  /* Bold for section titles */
-h3 { font-weight: 600; }  /* Semi-bold for card titles */
+h1 { font-weight: 500; }  /* Start restrained; use heavier only when the brand calls for it */
+h2 { font-weight: 500; }
+h3 { font-weight: 500; }
 body { font-weight: 400; } /* Regular for body */
 ```
 
@@ -290,9 +338,9 @@ const observer = new IntersectionObserver((entries) => {
 document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
 ```
 
-### Section Structure
+### Conversion structure, not a section template
 
-Build these sections in order, adapting based on the content provided. Not every page needs every section — but this is the standard high-converting flow:
+Choose sections because each answers a real conversion question. Do not mechanically include all sections or repeat identical card rows. A common flow is:
 
 1. **Header** — Sticky nav with logo, section links, and primary CTA button
 2. **Hero** — Headline, subheadline, CTA buttons, and a visual element (character illustration, product image, or background)
@@ -384,7 +432,7 @@ The HTML should follow this structure:
 
 ---
 
-## Phase 5: Verify
+## Phase 6: Browser QA
 
 After building, verify everything works before presenting to the user. This catches the silent failures (broken images, layout breaks) that undermine trust.
 
@@ -399,12 +447,14 @@ Use the preview server to check every image:
    - Any image with `naturalWidth === 0` is broken — fix the URL
 4. Force reload (`location.reload()`) before each screenshot to avoid stale cache
 
-### Responsive Check
+### Responsive and interaction check
 
 Resize the viewport and verify at three widths:
-- **Desktop** (1280px): All grids show columns, images full-size
-- **Tablet** (768px): Grids reduce columns, images scale down
-- **Mobile** (375px): Single column, hamburger menu, readable text
+- **Desktop** (1440px or the user's actual viewport): verify hierarchy, section rhythm, media crops, and maximum line lengths
+- **Tablet** (768px): verify deliberate reflow rather than accidental wrapping
+- **Mobile** (390px and 375px where practical): verify first fold, menu, CTA visibility, readable type, media crops, and touch targets
+- Exercise menus, accordions, forms, anchors, carousels, and reduced-motion behaviour rather than checking screenshots alone
+- Check horizontal overflow, console errors, broken media, focus visibility, and keyboard operation
 
 ### Fix Before Presenting
 
@@ -415,7 +465,7 @@ If any image is broken or any layout is wrong, fix it BEFORE showing the user. T
 
 ---
 
-## Phase 6: Deploy
+## Phase 7: Deploy & Live Verify
 
 ### Vercel Deployment
 
@@ -431,9 +481,11 @@ If the user wants a specific subdomain, use `--name` to set it (e.g., `--name gr
 ### Post-Deployment Verification
 
 After deployment, verify the live URL:
-1. Fetch the deployed URL to confirm it loads
-2. Check that all images load on the live site (hotlinked images may have CORS or referrer issues)
-3. Test responsive behavior on the live URL
+1. Fetch the exact production/preview alias and confirm status, title, and expected page marker
+2. Open the live URL in a real browser and capture desktop plus mobile screenshots
+3. Check images/video, navigation, forms, console errors, overflow, and responsive behaviour on the deployed build
+4. Confirm the alias points to this deployment; HTTP 200 alone is not proof that the correct project/version is live
+5. Never claim deployment success from CLI output alone when browser verification is still blocked
 
 ---
 
@@ -501,8 +553,8 @@ These prevent the page from being slow:
 
 - **Images**: Use Unsplash/source images with `w=` parameter for proper sizing. Never load a 4000px image for a 600px container.
 - **Fonts**: Maximum 2 font families. Load only the weights you use (e.g., `wght@400;600;700` not `wght@100..900`).
-- **CSS**: Keep styles in one external file. No CSS frameworks (Bootstrap/Tailwind) for simple landing pages — they add bloat.
-- **JavaScript**: Minimal JS only — hamburger menu, scroll reveal, smooth scroll. No jQuery, no React, no framework for a static landing page.
+- **CSS**: For a new static page, keep styles in one external file and avoid adding a CSS framework without a real benefit. In an existing project, preserve the established styling system.
+- **JavaScript**: Use minimal JavaScript for a static page. React/Next/Vite are valid when the existing repository or required interactions justify them; do not add a framework merely to render static copy.
 - **Above the fold**: The hero section must render without waiting for external resources. Use `font-display: swap` and preconnect to Google Fonts.
 
 ---
@@ -513,14 +565,21 @@ When you receive a landing page request, run through this mentally:
 
 - [ ] Do I have the client's website URL? (Need it for brand extraction)
 - [ ] Do I have content documents? (PDF, doc, transcript)
+- [ ] Did I read project/client instructions and identify the approved source of truth?
+- [ ] Did I load `frontend-design` and current `design-taste-frontend` before coding?
+- [ ] Did I decide whether `imagegen-frontend-web` is genuinely useful and generate/approve references if used?
+- [ ] Did I avoid loading Design Taste v1 with the current version?
+- [ ] Did I keep `imagegen-frontend-mobile` out of responsive website work?
+- [ ] Is the visual thesis specific to this subject and expressed as one coherent system?
 - [ ] Have I extracted ALL images from those documents?
 - [ ] Have I built a verified image catalog with working URLs?
 - [ ] Have I mapped every image to its content section?
 - [ ] Have I tested all three breakpoints?
 - [ ] Have I verified every image loads?
-- [ ] Is all CSS in styles.css (nothing inline)?
+- [ ] Does the implementation preserve the existing stack, or use external CSS for a genuinely static page?
 - [ ] Do I have proper meta tags (title, description, OG)?
 - [ ] Are font sizes readable (16px+ body, proper heading scale)?
 - [ ] Did I avoid all Anti-Slop patterns?
 - [ ] Do animations work (scroll reveal, hover states)?
 - [ ] Does the user want deployment? Where?
+- [ ] If deployed, did I verify the exact live alias in a browser at desktop and mobile sizes?

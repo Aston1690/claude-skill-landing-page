@@ -1,46 +1,30 @@
-#!/usr/bin/env bash
-# Hermes Skill Installer — Landing Page Builder
-# Paste this in your terminal:
-#   bash <(curl -fsSL https://raw.githubusercontent.com/Aston1690/claude-skill-landing-page/main/install.sh)
-
+#!/bin/bash
 set -euo pipefail
 
 SKILL_NAME="landing-page"
-HERMES_HOME="${HERMES_HOME:-$HOME/.hermes}"
-SKILL_DIR="$HERMES_HOME/skills/$SKILL_NAME"
+HERMES_ROOT="${HERMES_HOME:-$HOME/.hermes}"
+SKILL_DIR="$HERMES_ROOT/skills/$SKILL_NAME"
 REPO_URL="https://github.com/Aston1690/claude-skill-landing-page.git"
-TMP_DIR="${TMPDIR:-/tmp}/claude-skill-landing-page-install"
 
-echo ""
-echo "Installing Hermes skill: $SKILL_NAME"
-echo "Target: $SKILL_DIR"
-echo "────────────────────────────────────────────"
+printf '\nInstalling Hermes skill: %s\n' "$SKILL_NAME"
+printf '%s\n' '----------------------------------------'
 
-command -v git >/dev/null 2>&1 || {
-  echo "ERROR: git is required to install this skill."
-  exit 1
-}
-
-rm -rf "$TMP_DIR"
-git clone --depth 1 "$REPO_URL" "$TMP_DIR"
-
-mkdir -p "$SKILL_DIR"
-rm -rf "$SKILL_DIR"/*
-cp -R "$TMP_DIR"/* "$SKILL_DIR"/
-rm -rf "$TMP_DIR"
-
-if [ -f "$SKILL_DIR/SKILL.md" ]; then
-  echo ""
-  echo "Installed. In Hermes run:"
-  echo "  /reload-skills"
-  echo "  /skill landing-page"
-  echo ""
-  echo "Or restart Hermes, then run: /skill landing-page"
-  echo ""
+if [ -d "$SKILL_DIR/.git" ]; then
+  git -C "$SKILL_DIR" pull --ff-only origin main
+elif [ -e "$SKILL_DIR" ]; then
+  BACKUP="${SKILL_DIR}.backup.$(date +%Y%m%d%H%M%S)"
+  printf 'Existing non-git installation moved to %s\n' "$BACKUP"
+  mv "$SKILL_DIR" "$BACKUP"
+  git clone "$REPO_URL" "$SKILL_DIR"
 else
-  echo ""
-  echo "ERROR: Installation failed. Try manually:"
-  echo "  git clone $REPO_URL /tmp/landing-page-skill && mkdir -p $SKILL_DIR && cp -R /tmp/landing-page-skill/* $SKILL_DIR/"
-  echo ""
+  mkdir -p "$(dirname "$SKILL_DIR")"
+  git clone "$REPO_URL" "$SKILL_DIR"
+fi
+
+if [ ! -f "$SKILL_DIR/SKILL.md" ]; then
+  printf 'ERROR: %s/SKILL.md was not installed.\n' "$SKILL_DIR" >&2
   exit 1
 fi
+
+printf '\nInstalled at %s\n' "$SKILL_DIR"
+printf 'Inside Hermes, run:\n  /reload-skills\n  /skill %s\n\n' "$SKILL_NAME"
