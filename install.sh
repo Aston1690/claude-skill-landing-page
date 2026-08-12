@@ -10,7 +10,15 @@ printf '\nInstalling Hermes skill: %s\n' "$SKILL_NAME"
 printf '%s\n' '----------------------------------------'
 
 if [ -d "$SKILL_DIR/.git" ]; then
-  git -C "$SKILL_DIR" pull --ff-only origin main
+  CURRENT_REMOTE="$(git -C "$SKILL_DIR" remote get-url origin 2>/dev/null || true)"
+  if [ "$CURRENT_REMOTE" = "$REPO_URL" ] || [ "$CURRENT_REMOTE" = "${REPO_URL%.git}" ]; then
+    git -C "$SKILL_DIR" pull --ff-only origin main
+  else
+    BACKUP="${SKILL_DIR}.backup.$(date +%Y%m%d%H%M%S)"
+    printf 'Existing installation belongs to another repository; moved to %s\n' "$BACKUP"
+    mv "$SKILL_DIR" "$BACKUP"
+    git clone "$REPO_URL" "$SKILL_DIR"
+  fi
 elif [ -e "$SKILL_DIR" ]; then
   BACKUP="${SKILL_DIR}.backup.$(date +%Y%m%d%H%M%S)"
   printf 'Existing non-git installation moved to %s\n' "$BACKUP"
